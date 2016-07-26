@@ -1,0 +1,23 @@
+{
+  "name": "firebased",
+  "version": "0.0.1",
+  "description": "Higher order Firebase component for React",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/captivationsoftware/firebased.git"
+  },
+  "keywords": [
+    "React",
+    "Firebase"
+  ],
+  "author": "Captivation Software, LLC",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/captivationsoftware/firebased/issues"
+  },
+  "homepage": "https://github.com/captivationsoftware/firebased#readme"
+}
