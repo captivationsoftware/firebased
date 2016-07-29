@@ -37,7 +37,7 @@ import { firebased } from 'firebased';
 class MyComponent extends Component {
   render() {
     // this.props.items will contain the value provided by Firebase at ref 'items'
-    const list = this.props.items.map(n => <li>{n}</li> });
+    const list = this.props.items.map(n => <li>{n}</li>);
     return (
       <ul>
         { list }
@@ -57,11 +57,9 @@ class MyComponent extends Component {
   render() {
     // If this.props.userId were to equal 12345, this.props.user will
     // contain the value provided by Firebase at ref 'users/12345'.
-    const list = this.props.items.map(n => <li>{n}</li> });
+    const user = this.props.user;
     return (
-      <ul>
-        { list }
-      </ul>
+      <h1>Hello, { user.name }!</h1>
     );
   }
 }
