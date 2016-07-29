@@ -2,17 +2,19 @@ import React, { Component } from 'react';
 import { shallow } from 'enzyme';
 import { assert, expect } from 'chai';
 import sinon from 'sinon';
+import { each, reject } from 'lodash';
 import { firebased } from '../src/index';
 
 class Dummy extends Component { render () { return <span />; }    }
 
 describe('firebased', () => {
-  let stub, subscribeSpy, unsubscribeSpy, firebase, firebaseRef;
+  let stub, firebase, firebaseRef, subscribers, trigger;
 
   beforeEach(() => {
+    subscribers = [];
     firebaseRef = {
-      on: subscribeSpy,
-      off: unsubscribeSpy
+      on: (str, cb) => { subscribers = subscribers.concat(cb); },
+      off: (str, cb) => { subscribers = reject(subscribers, subscriber => subscriber === cb) }
     }
     stub = sinon.stub().returns(firebaseRef);
     firebase = {
@@ -49,18 +51,44 @@ describe('firebased', () => {
 
   describe('generated props', () => {
 
-    it('should include firebase', () => {
+    it('should pass firebase as prop', () => {
       const FirebasedComponent = firebased({ items: 'items' })(Dummy);
 
       const wrapper = shallow(<FirebasedComponent />, { context: { firebase }});
       expect(wrapper.props().firebase).to.eql(firebase);
     });
 
-    it('should be delegated to wrapped component', () => {
+    it('should pass named firebase ref as prop', () => {
       const FirebasedComponent = firebased({ items: 'items' })(Dummy);
 
       const wrapper = shallow(<FirebasedComponent />, { context: { firebase }});
       expect(wrapper.props().itemsRef).to.eql(firebaseRef);
+    });
+
+    it('should pass payload from firebase `value` callback as prop', () => {
+      const FirebasedComponent = firebased({ items: 'items' })(Dummy);
+
+      expect(subscribers).to.eql([]);
+      const wrapper = shallow(<FirebasedComponent />, { context: { firebase }});
+      expect(subscribers.length).to.equal(1);
+
+      expect(wrapper.props().items).to.be.undefined;
+      subscribers[0]({ val: () => [1,2,3] }); // trigger the callback
+      wrapper.update();
+      expect(wrapper.props().items).to.eql([1,2,3]);
+    });
+
+    it('should clean up subscribers when props change', () => {
+      const FirebasedComponent = firebased((props) => ({ items: `user/${props.userId}` }))(Dummy);
+
+      expect(subscribers).to.eql([]);
+      const wrapper = shallow(<FirebasedComponent />, { context: { firebase }});
+      expect(subscribers.length).to.equal(1);
+      const oldSubscriber = subscribers[0];
+
+      wrapper.setProps({ userId: 123 });
+      expect(subscribers.length).to.equal(1);
+      expect(subscribers[0]).not.to.eql(oldSubscriber);
     });
   });
 });

@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import { isFunction, mapValues, mapKeys, invertBy } from 'lodash';
+import { assign, isFunction, mapValues, mapKeys, omit, set } from 'lodash';
 
 export default paths => FirebasedComponent => class extends Component {
   static contextTypes = {
@@ -12,55 +12,41 @@ export default paths => FirebasedComponent => class extends Component {
   }
 
   componentWillMount() {
-    this.injectProps(this.props);
+    this.decorate(this.props);
   }
 
   componentWillReceiveProps(nextProps) {
-    if (isFunction(paths)) this.injectProps(nextProps);
+    if (isFunction(paths)) {
+      this.cleanup();
+      this.decorate(nextProps);
+    }
   }
 
-  injectProps(props) {
+  definitionsFor(props) {
+    return mapValues(isFunction(paths) ? paths(props) : paths,
+      path => this.context.firebase.database().ref(path));
+  }
 
-    const refs = mapValues(
-      isFunction(paths) ? paths(props) : paths,
-      path => this.context.firebase.database().ref(path)
-    );
+  cleanup() {
+    mapValues(this.definitionsFor(this.props),
+      (ref, prop) => ref.off('value', this.state.subscribers[prop])); 
+  }
 
-    this.setState(mapKeys(refs, (path, prop) => `${prop}Ref`));
+  decorate(props) {
+    const definitions = this.definitionsFor(props);
 
+    const refs = mapKeys(definitions, (path, prop) => `${prop}Ref`);
 
+    const subscribers = mapValues(definitions,
+      (ref, prop) => snapshot => this.setState(set({}, prop, snapshot.val())));
 
-    // const refs = mapValues(this.paths(props),
-    //   path => this.context.firebase.database().ref(path));
+    mapValues(definitions, (ref, prop) => ref.on('value', subscribers[prop]));
 
-    // this.setState(mapKeys(paths, path => `${path}Ref`).mapValues);
-
-
-  //   const refs = _.mapObject(this.interpolatedPaths(props), (path)=> {
-  //     return firebase.database().ref(path);
-  //   });
-   //
-  //   const subscribers = _.map(refs, (path, prop)=> {
-  //     const ref = firebase.database().ref(prop);
-  //     return ref.on('value', (snapshot) => {
-  //       const state = {};
-  //       state[prop] = snapshot.val();
-  //       this.setState(state);
-  //     });
-  //   });
-   //
-   //
-  //   const state = { subscribers }
-  //   _.forEach(refs, (ref, prop) => {
-  //     state[`${ref}Ref`] = ref
-  //   });
-   //
-  //    refs: _.mapKeys(refs, (ref) => _.capitalize([].join('-')) )
-  //  });
-  //   this.setState({ subscribers });
+    this.setState(assign({}, refs, { subscribers }));
   }
 
   render() {
-    return <FirebasedComponent {...this.props} {...this.state} firebase={this.context.firebase} />;
+    const decorations = omit(this.state, 'subscribers');
+    return <FirebasedComponent {...this.props} {...decorations} firebase={this.context.firebase} />;
   }
 }
