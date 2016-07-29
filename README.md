@@ -73,6 +73,3 @@ Also, every `@firebased` component also is passed firebase as a prop named `fire
 
 ### License
 MIT
-
-### Author
-Dave Barbalato, Captivation Software
