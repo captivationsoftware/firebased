@@ -1,6 +1,6 @@
 {
   "name": "firebased",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Higher order Firebase component for React",
   "main": "lib/index.js",
   "scripts": {
