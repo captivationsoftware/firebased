@@ -23,9 +23,8 @@ export default paths => FirebasedComponent => class extends Component {
   }
 
   definitionsFor(props) {
-    return this.context.firebase ?
-      mapValues(isFunction(paths) ? paths(props) : paths,
-        path => this.context.firebase.database().ref(path)) : {}
+    return mapValues(isFunction(paths) ? paths(props) : paths,
+      path => this.context.firebase.database().ref(path))
   }
 
   cleanup() {

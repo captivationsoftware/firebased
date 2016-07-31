@@ -19,6 +19,6 @@ export default class FirebaseProvider extends Component {
   }
 
   render() {
-    return this.props.children ? this.props.children : <div />;
+    return <div>{ this.props.children }</div>;
   }
 }
