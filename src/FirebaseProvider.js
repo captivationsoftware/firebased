@@ -7,8 +7,8 @@ export default class FirebaseProvider extends Component {
   }
 
   static propTypes = {
-    config: PropTypes.object.required,
-    children: React.PropTypes.element.isRequired
+    config: PropTypes.object.isRequired,
+    children: PropTypes.element.isRequired
   }
 
   getChildContext() {
